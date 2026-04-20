@@ -17,6 +17,7 @@ const CACHEABLE_TOOLS = new Set([
   "get_model_profile",
   "get_parameters",
   "compare_models",
+  "get_pricing",
 ]);
 
 type ToolResponse = {

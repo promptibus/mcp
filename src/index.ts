@@ -7,9 +7,9 @@ import { z } from "zod";
 
 const server = new McpServer({
   name: "promptibus",
-  version: "0.3.0",
+  version: "0.4.0",
   description:
-    "Model intelligence for AI agents — syntax, parameters, and routing for 67+ generative AI models via Promptibus",
+    "Model intelligence for AI agents — syntax, parameters, pricing, and routing for 67+ generative AI models via Promptibus",
 });
 
 console.error("Promptibus MCP server starting (API client mode)");
@@ -35,12 +35,12 @@ const tools = [
     },
   },
   {
-    name: "validate_prompt",
+    name: "lint_prompt",
     description:
-      "Validate a prompt against a model's rules. Finds errors like deprecated flags or exceeded limits.",
+      "Lint a prompt against a model's rules. Finds errors like deprecated flags, invalid parameters, or length violations, and suggests fixes.",
     schema: {
-      prompt: z.string().min(1).max(50000).describe("The prompt text to validate"),
-      model: z.string().min(1).max(100).describe("Model slug to validate against"),
+      prompt: z.string().min(1).max(50000).describe("The prompt text to lint"),
+      model: z.string().min(1).max(100).describe("Model slug to lint against"),
     },
   },
   {
@@ -66,6 +66,16 @@ const tools = [
       "Get a complete model profile: capabilities, syntax guide, parameters, community tips, and related prompts.",
     schema: {
       model: z.string().min(1).max(100).describe("Model slug (e.g., midjourney-v7, flux-2-pro, suno-v4)"),
+    },
+  },
+  {
+    name: "get_pricing",
+    description:
+      "Get real-world USD pricing for an AI model, a whole domain, or a planned generation volume. Returns per-unit cost, subscription plans, cheaper alternatives, and total-cost estimates. Call with just { model: 'dall-e-3', volume: 100 } for a quick 'what will this cost me' answer.",
+    schema: {
+      model: z.string().min(1).max(100).optional().describe("Model slug (e.g., midjourney-v7, dall-e-3). Omit to query a whole domain or get an overview."),
+      domain: z.string().max(10).optional().describe("Filter: IMAGE, VIDEO, TEXT, CODE, or AUDIO. Ignored when `model` is provided."),
+      volume: z.number().int().min(1).max(1_000_000).optional().describe("Planned generation volume (images, seconds, etc). When set, output includes total cost estimates."),
     },
   },
 ];

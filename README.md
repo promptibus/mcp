@@ -36,16 +36,17 @@ That's it. The package talks to the hosted Promptibus API — no database, no se
 
 ## Tools
 
-All six tools are available to every tier — including anonymous use without an API key. Tiering applies to rate limits and which models you can query against (see below).
+All seven tools are available to every tier — including anonymous use without an API key. Tiering applies to rate limits and which models you can query against (see below).
 
 | Tool | Description | Example Input |
 |---|---|---|
 | `recommend_model` | Find the best model for a task. Returns top 3 with reasoning and parameters. | `{ "task": "photorealistic portrait", "domain": "IMAGE" }` |
-| `optimize_prompt` | Optimize a prompt for a specific model. Applies model-specific syntax, community-tested parameters, and best-practice wording. (Available as `format_prompt` alias for backwards compatibility.) | `{ "text": "a cat in space", "model": "midjourney-v7" }` |
-| `validate_prompt` | Check a prompt against model-specific rules. Returns issues with severity and suggested fixes. | `{ "prompt": "a cat --ar 16:9", "model": "flux-2-pro" }` |
+| `optimize_prompt` | Optimize a prompt for a specific model. Applies model-specific syntax, community-tested parameters, and best-practice wording. | `{ "text": "a cat in space", "model": "midjourney-v7" }` |
+| `lint_prompt` | Lint a prompt against a model's rules. Finds deprecated flags, invalid parameters, or length violations, and suggests fixes. | `{ "prompt": "a cat --ar 16:9", "model": "flux-2-pro" }` |
 | `compare_models` | Side-by-side comparison of 2-5 models with provider, domain, cost, and capabilities. | `{ "models": ["flux-2-pro", "midjourney-v7"], "criteria": "photorealism" }` |
 | `get_parameters` | Get recommended parameters for a model, including defaults and community-tested configs. | `{ "model": "stable-diffusion-3-5", "task_type": "portrait" }` |
 | `get_model_profile` | Complete model profile: capabilities, syntax guide, parameters, community tips, and related prompts. | `{ "model": "suno-v4" }` |
+| `get_pricing` | Real-world USD pricing for a model, a domain, or a planned volume. Includes cheaper alternatives and total-cost estimates. | `{ "model": "dall-e-3", "volume": 100 }` |
 
 ## Resources
 
@@ -96,7 +97,7 @@ Limits reset daily at midnight UTC. See [pricing](https://promptibus.com/pricing
 
 ## Caching
 
-To keep things fast and reduce unnecessary API traffic, the client caches responses for three tools whose output changes rarely: `get_model_profile`, `get_parameters`, `compare_models`. Cache TTL is 24 hours, in-memory (per process). Cache is skipped for tools whose output is input-dependent in a way that would get stale (`recommend_model`, `optimize_prompt`, `validate_prompt`).
+To keep things fast and reduce unnecessary API traffic, the client caches responses for four tools whose output changes rarely: `get_model_profile`, `get_parameters`, `compare_models`, `get_pricing`. Cache TTL is 24 hours, in-memory (per process). Cache is skipped for tools whose output is input-dependent in a way that would get stale (`recommend_model`, `optimize_prompt`, `lint_prompt`).
 
 ## Supported Models
 
