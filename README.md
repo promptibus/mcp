@@ -36,13 +36,15 @@ That's it. The package talks to the hosted Promptibus API — no database, no se
 
 ## Tools
 
+All six tools are available to every tier — including anonymous use without an API key. Tiering applies to rate limits and which models you can query against (see below).
+
 | Tool | Description | Example Input |
 |---|---|---|
 | `recommend_model` | Find the best model for a task. Returns top 3 with reasoning and parameters. | `{ "task": "photorealistic portrait", "domain": "IMAGE" }` |
-| `format_prompt` | Format and optimize a prompt for a specific model. Applies model-specific syntax and best practices. | `{ "text": "a cat in space", "model": "midjourney-v7" }` |
-| `compare_models` | Side-by-side comparison of 2-5 models with parameters, pricing, and capabilities. | `{ "models": ["flux-2-pro", "midjourney-v7"], "criteria": "photorealism" }` |
-| `get_parameters` | Get recommended parameters for a model, including defaults and community-tested values. | `{ "model": "stable-diffusion-3-5", "task_type": "portrait" }` |
+| `optimize_prompt` | Optimize a prompt for a specific model. Applies model-specific syntax, community-tested parameters, and best-practice wording. (Available as `format_prompt` alias for backwards compatibility.) | `{ "text": "a cat in space", "model": "midjourney-v7" }` |
 | `validate_prompt` | Check a prompt against model-specific rules. Returns issues with severity and suggested fixes. | `{ "prompt": "a cat --ar 16:9", "model": "flux-2-pro" }` |
+| `compare_models` | Side-by-side comparison of 2-5 models with provider, domain, cost, and capabilities. | `{ "models": ["flux-2-pro", "midjourney-v7"], "criteria": "photorealism" }` |
+| `get_parameters` | Get recommended parameters for a model, including defaults and community-tested configs. | `{ "model": "stable-diffusion-3-5", "task_type": "portrait" }` |
 | `get_model_profile` | Complete model profile: capabilities, syntax guide, parameters, community tips, and related prompts. | `{ "model": "suno-v4" }` |
 
 ## Resources
@@ -81,14 +83,20 @@ Authentication is optional but recommended. Without an API key, you get anonymou
 
 ## Rate Limits
 
-| Plan | Daily Limit | Tools | Models |
-|---|---|---|---|
-| Anonymous (no key) | 25 requests | `recommend_model`, `format_prompt` | 10 free-tier models |
-| Free (with key) | 100 requests | + `get_parameters`, `get_model_profile` | 10 free-tier models |
-| Pro | 500 requests | All 6 tools | All 67+ models |
-| Studio | 2,000 requests | All 6 tools | All 67+ models |
+All tiers get access to **all 6 tools**. The difference is how many calls you get per day and which models you can query against.
+
+| Plan | Daily Limit | Model coverage |
+|---|---|---|
+| Anonymous (no key) | 25 requests | 10 free-tier models |
+| Free (with key) | 100 requests | 10 free-tier models |
+| Pro | 500 requests | All 67+ models |
+| Studio | 2,000 requests | All 67+ models |
 
 Limits reset daily at midnight UTC. See [pricing](https://promptibus.com/pricing) for plan details.
+
+## Caching
+
+To keep things fast and reduce unnecessary API traffic, the client caches responses for three tools whose output changes rarely: `get_model_profile`, `get_parameters`, `compare_models`. Cache TTL is 24 hours, in-memory (per process). Cache is skipped for tools whose output is input-dependent in a way that would get stale (`recommend_model`, `optimize_prompt`, `validate_prompt`).
 
 ## Supported Models
 

@@ -7,7 +7,7 @@ import { z } from "zod";
 
 const server = new McpServer({
   name: "promptibus",
-  version: "0.2.0",
+  version: "0.3.0",
   description:
     "Model intelligence for AI agents — syntax, parameters, and routing for 67+ generative AI models via Promptibus",
 });
@@ -26,11 +26,11 @@ const tools = [
     },
   },
   {
-    name: "format_prompt",
+    name: "optimize_prompt",
     description:
-      "Format and optimize a prompt for a specific AI model. Applies model-specific syntax and parameters.",
+      "Optimize a prompt for a specific AI model. Applies model-specific syntax, community-tested parameters, and best-practice wording so the prompt produces better results.",
     schema: {
-      text: z.string().min(1).max(50000).describe("The raw prompt text to format"),
+      text: z.string().min(1).max(50000).describe("The raw prompt text to optimize"),
       model: z.string().min(1).max(100).describe("Model slug (e.g., midjourney-v7, flux-2-pro)"),
     },
   },
