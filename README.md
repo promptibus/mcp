@@ -2,6 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/@promptibus/mcp.svg)](https://www.npmjs.com/package/@promptibus/mcp)
 [![npm downloads](https://img.shields.io/npm/dm/@promptibus/mcp.svg)](https://www.npmjs.com/package/@promptibus/mcp)
+[![Smithery](https://smithery.ai/badge/@promptibus/mcp)](https://smithery.ai/server/@promptibus/mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![MCP](https://img.shields.io/badge/MCP-compatible-0a7cff.svg)](https://modelcontextprotocol.io)
 [![Promptibus](https://img.shields.io/badge/powered%20by-promptibus.com-0a7cff.svg)](https://promptibus.com/mcp)
@@ -29,7 +30,29 @@ See [Client Configs](#client-configs) for per-client snippets.
 
 ## Quick Start
 
-Add to your MCP client configuration:
+There are three install paths, in rough order of convenience:
+
+### 1. One-click via Smithery (recommended)
+
+Visit https://smithery.ai/server/@promptibus/mcp, pick your client, click install. Smithery writes the config for you.
+
+### 2. Remote HTTP endpoint — zero install
+
+For MCP clients that support HTTP transport, point straight at our hosted endpoint:
+
+```json
+{
+  "mcpServers": {
+    "promptibus": {
+      "url": "https://promptibus.com/api/mcp"
+    }
+  }
+}
+```
+
+No npm, no process to manage, no local state. Works behind firewalls as long as the client can reach `promptibus.com`.
+
+### 3. npm stdio package — offline-capable, full control
 
 ```json
 {
@@ -45,7 +68,7 @@ Add to your MCP client configuration:
 }
 ```
 
-That's it. The package talks to the hosted Promptibus API — no database, no server setup.
+The package talks to the hosted Promptibus API — no database, no server setup. API key is optional (raises rate limits and unlocks all 67+ models).
 
 | Variable | Required | Description |
 |---|---|---|
