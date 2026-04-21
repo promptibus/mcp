@@ -1,0 +1,35 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.promptibus/mcp",
+  "title": "Promptibus MCP",
+  "description": "Model intelligence for AI agents — syntax, parameters, pricing, and routing for 67+ generative AI models (Midjourney, Flux, Suno, Runway, DALL-E, Stable Diffusion, and more). Seven tools: recommend_model, optimize_prompt, lint_prompt, compare_models, get_parameters, get_model_profile, get_pricing.",
+  "version": "0.4.1",
+  "repository": {
+    "url": "https://github.com/promptibus/mcp",
+    "source": "github"
+  },
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@promptibus/mcp",
+      "version": "0.4.1",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "PROMPTIBUS_API_KEY",
+          "description": "Optional API key for higher rate limits and expanded model coverage. Works anonymously without one.",
+          "isRequired": false,
+          "isSecret": true
+        },
+        {
+          "name": "PROMPTIBUS_API_URL",
+          "description": "Override API base URL. Defaults to https://promptibus.com. Useful for testing.",
+          "isRequired": false,
+          "isSecret": false
+        }
+      ]
+    }
+  ]
+}

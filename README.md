@@ -1,17 +1,35 @@
 # @promptibus/mcp
 
 [![npm version](https://img.shields.io/npm/v/@promptibus/mcp.svg)](https://www.npmjs.com/package/@promptibus/mcp)
+[![npm downloads](https://img.shields.io/npm/dm/@promptibus/mcp.svg)](https://www.npmjs.com/package/@promptibus/mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![MCP](https://img.shields.io/badge/MCP-compatible-0a7cff.svg)](https://modelcontextprotocol.io)
+[![Promptibus](https://img.shields.io/badge/powered%20by-promptibus.com-0a7cff.svg)](https://promptibus.com/mcp)
 
-Model intelligence for AI agents — syntax, parameters, and routing for 67+ generative AI models, delivered via Model Context Protocol.
+> **Model intelligence for AI agents.** Syntax, parameters, pricing, and routing for 67+ generative AI models (Midjourney, Flux, Suno, Runway, DALL-E, Stable Diffusion, and more), delivered via the Model Context Protocol.
 
-Promptibus MCP gives your AI agent structured knowledge about generative AI models: which model fits a task, how to format prompts for it, what parameters to use, and what pitfalls to avoid. It's not an API wrapper — it doesn't generate images or music. Instead, it tells your agent *how* to use the tools it already has access to.
+Promptibus MCP gives your AI agent structured knowledge about generative AI models: which model fits a task, how to format prompts for it, what parameters to use, what a run of 100 images will cost, and what pitfalls to avoid. It's not an API wrapper — it doesn't generate images or music. Instead, it tells your agent *how* to use the tools it already has access to.
 
 Think of it as a prompt engineering co-pilot embedded in your agent's tool chain.
 
+## Supported Clients
+
+Works out of the box with any MCP-compatible client:
+
+- **Claude Desktop** — edit `claude_desktop_config.json`
+- **Claude Code** — `claude mcp add promptibus -- npx -y @promptibus/mcp`
+- **Cursor** — edit `.cursor/mcp.json`
+- **Windsurf** — edit `~/.codeium/windsurf/mcp_config.json`
+- **Zed** — edit `settings.json` under `context_servers`
+- **Continue.dev** — edit `~/.continue/config.json`
+- **n8n** — MCP Client node, stdio transport
+- Any other stdio MCP client
+
+See [Client Configs](#client-configs) for per-client snippets.
+
 ## Quick Start
 
-Add to your MCP client configuration (Claude Desktop, Cursor, Windsurf, etc.):
+Add to your MCP client configuration:
 
 ```json
 {
@@ -84,7 +102,7 @@ Authentication is optional but recommended. Without an API key, you get anonymou
 
 ## Rate Limits
 
-All tiers get access to **all 6 tools**. The difference is how many calls you get per day and which models you can query against.
+All tiers get access to **all 7 tools**. The difference is how many calls you get per day and which models you can query against.
 
 | Plan | Daily Limit | Model coverage |
 |---|---|---|
@@ -122,13 +140,108 @@ Full list at [promptibus.com/models](https://promptibus.com/models).
 - Anonymous usage (no key) is rate-limited by IP
 - No client-side DB, no local state beyond a single HTTP client
 
+## Client Configs
+
+### Claude Desktop
+
+`~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
+
+```json
+{
+  "mcpServers": {
+    "promptibus": {
+      "command": "npx",
+      "args": ["-y", "@promptibus/mcp"]
+    }
+  }
+}
+```
+
+### Claude Code
+
+```bash
+claude mcp add promptibus -- npx -y @promptibus/mcp
+```
+
+### Cursor
+
+`.cursor/mcp.json` in your project (or `~/.cursor/mcp.json` globally):
+
+```json
+{
+  "mcpServers": {
+    "promptibus": {
+      "command": "npx",
+      "args": ["-y", "@promptibus/mcp"]
+    }
+  }
+}
+```
+
+### Windsurf
+
+`~/.codeium/windsurf/mcp_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "promptibus": {
+      "command": "npx",
+      "args": ["-y", "@promptibus/mcp"]
+    }
+  }
+}
+```
+
+### Zed
+
+`settings.json`:
+
+```json
+{
+  "context_servers": {
+    "promptibus": {
+      "command": {
+        "path": "npx",
+        "args": ["-y", "@promptibus/mcp"]
+      }
+    }
+  }
+}
+```
+
+### Continue.dev
+
+`~/.continue/config.json`, under `experimental.modelContextProtocolServers`:
+
+```json
+{
+  "transport": {
+    "type": "stdio",
+    "command": "npx",
+    "args": ["-y", "@promptibus/mcp"]
+  }
+}
+```
+
+### n8n
+
+In the MCP Client node, set transport to **stdio**:
+
+```
+Command: npx
+Arguments: -y @promptibus/mcp
+```
+
 ## Links
 
 - [Website](https://promptibus.com)
 - [Models](https://promptibus.com/models)
 - [API Keys](https://promptibus.com/settings/api-keys)
 - [Pricing](https://promptibus.com/pricing)
+- [MCP Spec](https://modelcontextprotocol.io)
+- [Report issues](https://github.com/promptibus/mcp/issues)
 
 ## License
 
-MIT
+MIT — © Promptibus
