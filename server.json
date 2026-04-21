@@ -1,9 +1,9 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "io.github.promptibus/mcp",
+  "name": "com.promptibus/mcp",
   "title": "Promptibus MCP",
-  "description": "Model intelligence for AI agents — syntax, parameters, pricing, and routing for 67+ generative AI models (Midjourney, Flux, Suno, Runway, DALL-E, Stable Diffusion, and more). Seven tools: recommend_model, optimize_prompt, lint_prompt, compare_models, get_parameters, get_model_profile, get_pricing.",
-  "version": "0.4.1",
+  "description": "Model intelligence for AI agents — syntax, params, pricing for 67+ generative AI models.",
+  "version": "0.4.2",
   "repository": {
     "url": "https://github.com/promptibus/mcp",
     "source": "github"
@@ -12,7 +12,7 @@
     {
       "registryType": "npm",
       "identifier": "@promptibus/mcp",
-      "version": "0.4.1",
+      "version": "0.4.2",
       "transport": {
         "type": "stdio"
       },
