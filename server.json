@@ -3,7 +3,7 @@
   "name": "com.promptibus/mcp",
   "title": "Promptibus MCP",
   "description": "Model intelligence for AI agents — syntax, params, pricing for 67+ generative AI models.",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "repository": {
     "url": "https://github.com/promptibus/mcp",
     "source": "github"
@@ -12,7 +12,7 @@
     {
       "registryType": "npm",
       "identifier": "@promptibus/mcp",
-      "version": "0.4.2",
+      "version": "0.4.3",
       "transport": {
         "type": "stdio"
       },

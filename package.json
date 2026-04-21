@@ -1,6 +1,6 @@
 {
   "name": "@promptibus/mcp",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "mcpName": "com.promptibus/mcp",
   "description": "Model intelligence for AI agents — syntax, parameters, and routing for 67+ generative AI models via Promptibus",
   "type": "module",
