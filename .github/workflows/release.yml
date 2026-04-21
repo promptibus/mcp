@@ -1,0 +1,116 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+-*"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Extract version from tag
+        id: version
+        run: echo "version=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
+
+      - name: Verify package.json version matches tag
+        run: |
+          PKG_VER=$(node -p "require('./package.json').version")
+          TAG_VER="${{ steps.version.outputs.version }}"
+          if [ "$PKG_VER" != "$TAG_VER" ]; then
+            echo "::error title=Version mismatch::package.json has $PKG_VER but tag is v$TAG_VER. Bump package.json before tagging."
+            exit 1
+          fi
+
+      - name: Verify server.json version matches tag
+        run: |
+          SRV_VER=$(jq -r '.version' server.json)
+          PKG_VER_IN_SERVER=$(jq -r '.packages[0].version' server.json)
+          TAG_VER="${{ steps.version.outputs.version }}"
+          if [ "$SRV_VER" != "$TAG_VER" ] || [ "$PKG_VER_IN_SERVER" != "$TAG_VER" ]; then
+            echo "::error title=server.json version mismatch::server.json has version=$SRV_VER and packages[0].version=$PKG_VER_IN_SERVER but tag is v$TAG_VER."
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Publish to npm
+        run: npm publish --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Install mcp-publisher CLI
+        run: |
+          curl -sL -o /tmp/mcp-publisher.tgz \
+            https://github.com/modelcontextprotocol/registry/releases/download/v1.6.0/mcp-publisher_linux_amd64.tar.gz
+          tar xzf /tmp/mcp-publisher.tgz -C /tmp
+          sudo mv /tmp/mcp-publisher /usr/local/bin/
+          mcp-publisher --help
+
+      - name: Login to MCP Registry (DNS-verified com.promptibus namespace)
+        env:
+          PRIVATE_KEY: ${{ secrets.PROMPTIBUS_DNS_PRIVATE_KEY }}
+        run: mcp-publisher login dns --domain promptibus.com --private-key "$PRIVATE_KEY"
+
+      - name: Publish to official MCP Registry
+        run: mcp-publisher publish
+
+      - name: Re-release on Smithery (triggers capability re-scan)
+        env:
+          SMITHERY_KEY: ${{ secrets.SMITHERY_API_KEY }}
+        run: |
+          PAYLOAD=$(cat <<'EOF'
+          {
+            "type": "external",
+            "upstreamUrl": "https://promptibus.com/api/mcp",
+            "configSchema": {
+              "type": "object",
+              "title": "Promptibus MCP Configuration",
+              "description": "All fields are optional. Anonymous tier gives 25 calls/day across 10 most-used models. An API key raises limits and unlocks all 67+ models.",
+              "properties": {
+                "PROMPTIBUS_API_KEY": {
+                  "type": "string",
+                  "title": "API Key",
+                  "description": "Promptibus API key (starts with psy_). Get one at https://promptibus.com/settings/api-keys",
+                  "format": "password"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          }
+          EOF
+          )
+          RESP=$(curl -sS -f -w "\nHTTP:%{http_code}" -X PUT \
+            -H "Authorization: Bearer $SMITHERY_KEY" \
+            -F "payload=$PAYLOAD" \
+            "https://api.smithery.ai/servers/promptibus/mcp/releases")
+          echo "$RESP"
+          RELEASE_ID=$(echo "$RESP" | head -n1 | jq -r '.deploymentId')
+          echo "Smithery release id: $RELEASE_ID"
+
+      - name: Summary
+        run: |
+          {
+            echo "## Release v${{ steps.version.outputs.version }} published"
+            echo ""
+            echo "- **npm:** https://www.npmjs.com/package/@promptibus/mcp/v/${{ steps.version.outputs.version }}"
+            echo "- **MCP Registry:** https://registry.modelcontextprotocol.io/v0/servers?search=promptibus"
+            echo "- **Smithery:** https://smithery.ai/server/@promptibus/mcp"
+          } >> "$GITHUB_STEP_SUMMARY"

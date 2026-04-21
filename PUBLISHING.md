@@ -2,7 +2,40 @@
 
 This doc is for maintainers. It covers npm release and MCP-ecosystem registration.
 
-## npm Release
+## Automated release (recommended)
+
+Tagging `vX.Y.Z` triggers [`.github/workflows/release.yml`](./.github/workflows/release.yml) which publishes to **npm**, the **official MCP Registry**, and **Smithery** in one shot.
+
+```bash
+# 1. Bump version in BOTH files (they must match the tag)
+npm version patch --no-git-tag-version   # writes package.json
+jq '.version = "'"$(node -p 'require(\"./package.json\").version')"'" | .packages[0].version = .version' \
+   server.json > server.json.tmp && mv server.json.tmp server.json
+
+# 2. Commit + tag + push
+git add package.json package-lock.json server.json
+git commit -m "Release v0.x.y"
+git tag "v$(node -p 'require(\"./package.json\").version')"
+git push origin main --tags
+```
+
+The workflow verifies that `package.json`, `server.json`, and the tag all match, then:
+1. `npm publish --access public --provenance`
+2. `mcp-publisher login dns --domain promptibus.com --private-key <secret>`
+3. `mcp-publisher publish` — updates the official registry
+4. `PUT /servers/promptibus/mcp/releases` on Smithery — triggers capability re-scan
+
+Required GitHub repository secrets (Settings → Secrets and variables → Actions):
+
+| Secret | Purpose | Source |
+|---|---|---|
+| `NPM_TOKEN` | publish to npm | https://www.npmjs.com/settings/~/tokens → Generate New Token → Automation |
+| `PROMPTIBUS_DNS_PRIVATE_KEY` | auth to MCP Registry under `com.promptibus/*` namespace | 64-char hex — kept by repo maintainer; do not rotate without updating the DNS TXT record |
+| `SMITHERY_API_KEY` | publish releases to Smithery | Smithery dashboard → Settings → API Keys |
+
+If a secret rotates, update it in the repo Settings.
+
+## Manual npm release (fallback)
 
 ```bash
 # 1. Update version
