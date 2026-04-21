@@ -3,9 +3,9 @@
  * Calls the hosted API at promptibus.com (or a custom URL via PROMPTIBUS_API_URL).
  *
  * Includes a 24h in-memory cache for tools whose answers change rarely
- * (model profiles, parameters, model comparisons). Caching is disabled for
- * tools whose output is input-dependent in a way that shouldn't be stale
- * (recommend_model, optimize_prompt/format_prompt, validate_prompt).
+ * (model profiles, parameters, model comparisons, pricing). Caching is
+ * disabled for tools whose output is input-dependent in a way that
+ * shouldn't be stale (recommend_model, optimize_prompt, lint_prompt).
  */
 
 const BASE_URL = process.env.PROMPTIBUS_API_URL || "https://promptibus.com";
