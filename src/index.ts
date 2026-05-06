@@ -7,7 +7,7 @@ import { z } from "zod";
 
 const server = new McpServer({
   name: "promptibus",
-  version: "0.4.4",
+  version: "0.4.5",
   description:
     "Model intelligence for AI agents — syntax, parameters, pricing, and routing for 67+ generative AI models via Promptibus",
 });

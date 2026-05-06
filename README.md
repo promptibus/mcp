@@ -327,6 +327,12 @@ Arguments: -y @promptibus/mcp
 
 Full catalogue: [promptibus.com/models](https://promptibus.com/models).
 
+## ⭐ Help others find this
+
+If `@promptibus/mcp` saves your agent from a wrong-syntax run or a $50 surprise on DALL-E volume, [drop a star](https://github.com/promptibus/mcp) on the repo. Stars are how new MCP users discover quality servers in a sea of generic wrappers — it costs you a click and the next person ships faster.
+
+[![Star this repo](https://img.shields.io/github/stars/promptibus/mcp?style=social)](https://github.com/promptibus/mcp/stargazers)
+
 ## Links
 
 - **Website:** [promptibus.com](https://promptibus.com)
