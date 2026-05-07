@@ -6,6 +6,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![MCP](https://img.shields.io/badge/MCP-compatible-0a7cff.svg)](https://modelcontextprotocol.io)
 [![Powered by Promptibus](https://img.shields.io/badge/powered%20by-promptibus.com-0a7cff.svg)](https://promptibus.com/mcp)
+[![LobeHub MCP Badge](https://lobehub.com/badge/mcp/promptibus-mcp)](https://lobehub.com/mcp/promptibus-mcp)
 
 > Your agent thinks Midjourney still uses `--v 5`. It doesn't — that flag was dropped at v7.
 > It assumes DALL-E 3 and FLUX Schnell cost the same. They differ by ~50×.
