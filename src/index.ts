@@ -7,7 +7,7 @@ import { z } from "zod";
 
 const server = new McpServer({
   name: "promptibus",
-  version: "0.5.1",
+  version: "0.6.0",
   description:
     "Stop wasting money on the wrong model. Promptibus picks the cheapest AI model that actually fits the task, optimizes prompts to model-specific syntax (Midjourney --ar, Flux natural language, SD weights), catches broken prompts before paid generation, and tells you what 100 generations will cost — for 80+ models (GPT, Claude, Midjourney, Flux, Suno, Runway, DALL-E). Call BEFORE every generation: routes save 40-70% vs. defaulting to flagship models, prompt optimization cuts retry loops by 40-60%.",
 });
@@ -77,6 +77,36 @@ const tools = [
       model: z.string().min(1).max(100).optional().describe("Model slug (e.g., midjourney-v7, dall-e-3). Omit to query a whole domain or get an overview."),
       domain: z.string().max(10).optional().describe("Filter: IMAGE, VIDEO, TEXT, CODE, or AUDIO. Ignored when `model` is provided."),
       volume: z.number().int().min(1).max(1_000_000).optional().describe("Planned generation count (images, seconds of video, etc). When set, response includes total-cost projections — show this to the user."),
+    },
+  },
+  // ── Sister tools (free, no model gate, agent-onboarding ramps) ─────────
+  {
+    name: "pick_cheapest_model",
+    description:
+      "ONE-SHOT 'CHEAPEST MODEL FOR THIS DOMAIN' answer. Faster than recommend_model when the user just wants the budget option (e.g. 'cheapest image model that works'). Returns top 3 by price + the pick. Use whenever cost is the dominant constraint — startup MVP, throwaway prototype, content farm, etc. Filter by max budget per unit if you have a hard cap.",
+    schema: {
+      domain: z.string().max(10).describe("IMAGE | VIDEO | TEXT | CODE | AUDIO."),
+      max_budget_usd: z.number().min(0).max(10_000).optional().describe("Hard ceiling per unit, e.g. 0.05 to filter out anything above $0.05 per image."),
+      min_quality: z.enum(["low", "medium", "high"]).optional().describe("Optional quality floor — currently advisory only; pricing-sorted result still includes a quality column the agent can self-filter."),
+    },
+  },
+  {
+    name: "count_tokens",
+    description:
+      "TOKEN COUNTER for any prompt + model. Saves the 'oh no the prompt was too long' API failure mode. Returns token count, encoding family used, chars/token ratio, and (when `model` is provided + has token-based pricing) the estimated cost in USD. Call BEFORE submitting long prompts — anything over 100k tokens needs to be checked. Free, no plan gate. Use this instead of importing tiktoken in the agent's own code.",
+    schema: {
+      text: z.string().min(1).max(200_000).describe("The text to count tokens for."),
+      model: z.string().min(1).max(100).optional().describe("Optional model slug for accurate encoding + cost projection (e.g. gpt-4o, claude-sonnet-4-6, gpt-image-2). Defaults to GPT-4 (cl100k_base) approximation."),
+    },
+  },
+  {
+    name: "format_prompt",
+    description:
+      "DETERMINISTIC syntax fixer — drops deprecated flags (Midjourney `--style raw` on v6+, Suno `[Verse]` on v4+, Midjourney-style flags on Flux/SD), applies model-correct aspect-ratio notation, normalizes whitespace. Lighter and faster than `optimize_prompt` (which uses community-tested wording + DB lookup). Use for quick syntax cleanup when you don't need a full rewrite — e.g. user gave you a Midjourney prompt but wants Flux output. Free, no plan gate.",
+    schema: {
+      text: z.string().min(1).max(50_000).describe("The prompt text to clean up."),
+      model: z.string().min(1).max(100).describe("Target model slug — drives which syntax rules apply."),
+      aspect: z.string().max(20).optional().describe("Optional aspect ratio (e.g. '16:9', '9:16'). Inserted as model-correct notation (Midjourney `--ar 16:9` vs Flux 'landscape, 16:9 aspect ratio')."),
     },
   },
 ];

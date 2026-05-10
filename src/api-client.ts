@@ -18,6 +18,10 @@ const CACHEABLE_TOOLS = new Set([
   "get_parameters",
   "compare_models",
   "get_pricing",
+  // Phase 2 sister tools — output is deterministic given inputs.
+  "pick_cheapest_model",
+  // count_tokens + format_prompt are input-dependent in a way the agent
+  // re-asks per-prompt; caching adds little.
 ]);
 
 type ToolResponse = {
