@@ -7,7 +7,7 @@ import { z } from "zod";
 
 const server = new McpServer({
   name: "promptibus",
-  version: "0.5.0",
+  version: "0.4.6",
   description:
     "Stop wasting money on the wrong model. Promptibus picks the cheapest AI model that actually fits the task, optimizes prompts to model-specific syntax (Midjourney --ar, Flux natural language, SD weights), catches broken prompts before paid generation, and tells you what 100 generations will cost — for 80+ models (GPT, Claude, Midjourney, Flux, Suno, Runway, DALL-E). Call BEFORE every generation: routes save 40-70% vs. defaulting to flagship models, prompt optimization cuts retry loops by 40-60%.",
 });
