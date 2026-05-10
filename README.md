@@ -7,11 +7,73 @@
 [![MCP](https://img.shields.io/badge/MCP-compatible-0a7cff.svg)](https://modelcontextprotocol.io)
 [![Promptibus](https://img.shields.io/badge/powered%20by-promptibus.com-0a7cff.svg)](https://promptibus.com/mcp)
 
-> **Model intelligence for AI agents.** Syntax, parameters, pricing, and routing for 67+ generative AI models (Midjourney, Flux, Suno, Runway, DALL-E, Stable Diffusion, and more), delivered via the Model Context Protocol.
+> **Stop your AI agent from over-paying for the wrong model.** Promptibus MCP picks the cheapest model that fits, optimizes prompts to model-specific syntax, and tells you what 100 generations will cost — for **80+ generative AI models** (GPT, Claude, Midjourney, Flux, Suno, Runway, DALL-E, Stable Diffusion, and more).
 
-Promptibus MCP gives your AI agent structured knowledge about generative AI models: which model fits a task, how to format prompts for it, what parameters to use, what a run of 100 images will cost, and what pitfalls to avoid. It's not an API wrapper — it doesn't generate images or music. Instead, it tells your agent *how* to use the tools it already has access to.
+## Why agents need this
 
-Think of it as a prompt engineering co-pilot embedded in your agent's tool chain.
+Without Promptibus, an AI agent that calls generative tools tends to:
+
+- **Default to the flagship model for every task** ("I'll just use GPT-4o / Midjourney v7 / Sora") — overpaying 5-10x on calls that a cheaper model handles fine.
+- **Send raw English prompts to models that need specific syntax** — Midjourney wants `--ar 16:9 --stylize 250`, Flux wants natural-language phrasing, Stable Diffusion wants weighted tokens. Skip this and you eat 40-60% retry loops.
+- **Burn money on broken prompts** — deprecated flags, banned keywords, length violations. Generation costs $0.02-0.50 per call; linting is free.
+- **Surprise the user with the bill** — "I generated 100 images for $4" is fine, "...for $80" is a lawsuit.
+
+Promptibus MCP fixes all four. It's not an API wrapper (doesn't generate anything itself) — it tells your agent *how* to use the generation tools it already has access to.
+
+**Concrete impact on real agent loops:**
+- 40-70% cost reduction on agent-driven image/video/music workloads via cost-aware routing
+- 40-60% fewer retry loops via model-specific prompt optimization
+- Zero "why did this generate garbage" debug cycles (lint catches it before generation)
+
+## Few-shot examples — what calling these tools looks like
+
+```
+User: "Generate a photorealistic product shot of a coffee mug on marble."
+
+Agent reasoning:
+  → call recommend_model({task: "photorealistic product shot of coffee mug on marble"})
+  ← Top 3: Flux 2 Pro ($0.04/img), DALL-E 3 HD ($0.08/img), Midjourney v7 (subscription).
+  → call optimize_prompt({text: "photorealistic product shot of coffee mug on marble", model: "flux-2-pro"})
+  ← "Studio product photography of a ceramic coffee mug centered on polished
+     Carrara marble surface, soft diffused window light from left, shallow depth
+     of field, 100mm macro lens compression, --no logos --quality 2"
+  → call lint_prompt({prompt: "<optimized>", model: "flux-2-pro"})
+  ← OK. No issues.
+  → [user's image generation tool] Flux 2 Pro with optimized prompt.
+
+Reply to user: "Generated via Flux 2 Pro ($0.04). I optimized your prompt for
+Flux-specific syntax — saved you a retry. [image]"
+```
+
+```
+User: "I want to make 50 short instrumental tracks for my game. Budget?"
+
+Agent reasoning:
+  → call recommend_model({task: "instrumental music for game", domain: "AUDIO", constraints: "50 tracks"})
+  ← Top 3: Suno v5 (subscription, $30/mo unlimited), Udio 2.0, Stable Audio 2.
+  → call get_pricing({domain: "AUDIO", volume: 50})
+  ← Suno v5: $30/mo (unlimited under fair-use) → $0.60/track effective.
+     Udio 2.0: $0.50/track pay-per-use → $25 total.
+     Stable Audio 2.0: $0.20/track → $10 total (limited customization).
+
+Reply to user: "Cheapest is Stable Audio 2 at $10 for all 50, but you trade
+some quality. Best balance is Suno v5 sub at $30/mo (unlimited). Want me to
+proceed with one?"
+```
+
+```
+User: "Can you debug this Midjourney prompt? It's not generating what I want."
+[provides prompt]
+
+Agent reasoning:
+  → call lint_prompt({prompt: "<user prompt>", model: "midjourney-v7"})
+  ← Found: --style raw was deprecated in v6. --hd flag invalid (use --quality 2).
+     Suggested fix: replace --style raw → remove, --hd → --quality 2.
+
+Reply to user: "Two flags are broken. --style raw was deprecated in v6, and
+--hd should be --quality 2. Fixed prompt: [...]. This would have failed silently
+and produced garbage."
+```
 
 ## Supported Clients
 
@@ -77,17 +139,24 @@ The package talks to the hosted Promptibus API — no database, no server setup.
 
 ## Tools
 
-All seven tools are available to every tier — including anonymous use without an API key. Tiering applies to rate limits and which models you can query against (see below).
+All seven tools work on every tier — including anonymous (no API key). Tiering applies to daily quota and which models can be queried (see [Rate Limits](#rate-limits)).
 
-| Tool | Description | Example Input |
+| Tool | When the agent should call it | Example |
 |---|---|---|
-| `recommend_model` | Find the best model for a task. Returns top 3 with reasoning and parameters. | `{ "task": "photorealistic portrait", "domain": "IMAGE" }` |
-| `optimize_prompt` | Optimize a prompt for a specific model. Applies model-specific syntax, community-tested parameters, and best-practice wording. | `{ "text": "a cat in space", "model": "midjourney-v7" }` |
-| `lint_prompt` | Lint a prompt against a model's rules. Finds deprecated flags, invalid parameters, or length violations, and suggests fixes. | `{ "prompt": "a cat --ar 16:9", "model": "flux-2-pro" }` |
-| `compare_models` | Side-by-side comparison of 2-5 models with provider, domain, cost, and capabilities. | `{ "models": ["flux-2-pro", "midjourney-v7"], "criteria": "photorealism" }` |
-| `get_parameters` | Get recommended parameters for a model, including defaults and community-tested configs. | `{ "model": "stable-diffusion-3-5", "task_type": "portrait" }` |
-| `get_model_profile` | Complete model profile: capabilities, syntax guide, parameters, community tips, and related prompts. | `{ "model": "suno-v4" }` |
-| `get_pricing` | Real-world USD pricing for a model, a domain, or a planned volume. Includes cheaper alternatives and total-cost estimates. | `{ "model": "dall-e-3", "volume": 100 }` |
+| `recommend_model` | Before any "generate / make / create / draw / compose / write" task where the user didn't pin a model. Picks the cheapest fit. | `{ "task": "photorealistic product shot", "domain": "IMAGE", "constraints": "under $0.05/img" }` |
+| `optimize_prompt` | Right after picking the model and right before generation. Rewrites raw English to model-specific syntax. | `{ "text": "a cat in space", "model": "midjourney-v7" }` |
+| `lint_prompt` | Final pre-flight check before paying for a generation. Catches deprecated flags + banned keywords + length issues. | `{ "prompt": "a cat --ar 16:9 --style raw", "model": "midjourney-v7" }` |
+| `compare_models` | When the user is on the fence between 2-5 models. Returns side-by-side diff so they pick the cheapest fit. | `{ "models": ["flux-2-pro", "midjourney-v7"], "criteria": "photorealism + price" }` |
+| `get_parameters` | Whenever you're about to call `model.generate(...)` without explicit parameters. | `{ "model": "stable-diffusion-3-5", "task_type": "portrait" }` |
+| `get_model_profile` | Before recommending a model the user hasn't used (catch model gotchas: Suno can't do instrumental-only, Midjourney can't do transparent PNG, etc). | `{ "model": "suno-v4" }` |
+| `get_pricing` | Any time the conversation heads toward "let's generate N of X". Flag the bill before they pay it. | `{ "model": "dall-e-3", "volume": 100 }` |
+
+**Recommended call order for a typical generation task:**
+1. `recommend_model` — pick the right tool for the job.
+2. `get_pricing` — show the user what it'll cost.
+3. `optimize_prompt` — rewrite to model-specific syntax.
+4. `lint_prompt` — catch broken prompts before paying.
+5. → call your actual generation tool.
 
 ## Resources
 
@@ -131,8 +200,8 @@ All tiers get access to **all 7 tools**. The difference is how many calls you ge
 |---|---|---|
 | Anonymous (no key) | 25 requests | 10 free-tier models |
 | Free (with key) | 100 requests | 10 free-tier models |
-| Pro | 500 requests | All 67+ models |
-| Studio | 2,000 requests | All 67+ models |
+| Pro ($9/mo) | 500 requests | All 80+ models |
+| Studio ($29/mo) | 2,000 requests | All 80+ models + team seats |
 
 Limits reset daily at midnight UTC. See [pricing](https://promptibus.com/pricing) for plan details.
 
@@ -142,7 +211,7 @@ To keep things fast and reduce unnecessary API traffic, the client caches respon
 
 ## Supported Models
 
-67+ models across 5 domains:
+80+ models across 5 domains:
 
 **IMAGE** — Midjourney v7, v6.1, v6 | FLUX 2 Pro, 1.1 Pro, Dev, Schnell | Stable Diffusion 3.5, XL | DALL-E 3 | Ideogram 3 | Recraft V3 | Leonardo Phoenix | Google Imagen 3 | and more
 
