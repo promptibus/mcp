@@ -1,6 +1,6 @@
 {
   "name": "@promptibus/mcp",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "mcpName": "com.promptibus/mcp",
   "description": "Stop your AI agent from over-paying for the wrong model. Cost-aware model routing, model-specific prompt optimization (Midjourney, Flux, SD), and pre-flight lint for 80+ generative AI models. Saves 40-70% on agent-driven generation workloads.",
   "type": "module",
