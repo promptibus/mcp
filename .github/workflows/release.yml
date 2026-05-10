@@ -7,7 +7,7 @@ on:
       - "v[0-9]+.[0-9]+.[0-9]+-*"
 
 permissions:
-  contents: read
+  contents: write   # gh release create needs write
   id-token: write
 
 jobs:
@@ -104,6 +104,20 @@ jobs:
           echo "$RESP"
           RELEASE_ID=$(echo "$RESP" | head -n1 | jq -r '.deploymentId')
           echo "Smithery release id: $RELEASE_ID"
+
+      - name: Create GitHub Release
+        # Auto-create a Release entry on github.com/promptibus/mcp/releases for
+        # this tag. Body is auto-generated from commits since the previous tag
+        # (PRs + commit subjects). Without this step, tags publish to npm/MCP
+        # Registry/Smithery but the GitHub Releases page stays stuck on the
+        # last manually-created release — confusing for users browsing history.
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "v${{ steps.version.outputs.version }}" \
+            --title "v${{ steps.version.outputs.version }}" \
+            --generate-notes \
+            --verify-tag
 
       - name: Summary
         run: |
