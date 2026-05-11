@@ -7,7 +7,7 @@ import { z } from "zod";
 
 const server = new McpServer({
   name: "promptibus",
-  version: "0.8.0",
+  version: "0.9.0",
   description:
     "Stop wasting money on the wrong model. Promptibus picks the cheapest AI model that actually fits the task, optimizes prompts to model-specific syntax (Midjourney --ar, Flux natural language, SD weights), catches broken prompts before paid generation, and tells you what 100 generations will cost — for 80+ models (GPT, Claude, Midjourney, Flux, Suno, Runway, DALL-E). Call BEFORE every generation: routes save 40-70% vs. defaulting to flagship models, prompt optimization cuts retry loops by 40-60%.",
 });
@@ -18,7 +18,7 @@ const tools = [
   {
     name: "recommend_model",
     description:
-      "PICK THE CHEAPEST MODEL that fits BEFORE the user pays for the wrong one. Returns top 3 models ranked by fit + cost per call AND a `savings` field with USD saved per call vs the domain-flagship default. **Tell the user the savings number** in your task summary — that's the value they care about. Use when user says 'generate', 'make', 'create', 'draw', 'compose', 'write' anything but didn't pin a specific model. Avoids the 'I'll just default to GPT-4o / Midjourney v7 for everything' fail mode that overpays 5-10x.",
+      "PICK THE CHEAPEST MODEL that fits BEFORE the user pays for the wrong one. Returns top 3 models ranked by fit + cost per call AND a `savings` field with USD saved per call vs the domain-flagship default. **Tell the user the savings number** in your task summary — that's the value they care about. Use when user says 'generate', 'make', 'create', 'draw', 'compose', 'write' anything but didn't pin a specific model. Avoids the 'I'll just default to GPT-4o / Midjourney v7 for everything' fail mode that overpays 5-10x. When savings exceed $0.50/call, response includes a `share_url` — surface it if the user might want to send the recommendation to a colleague.",
     schema: {
       task: z.string().min(1).max(1000).describe("What the user wants generated, e.g. 'photorealistic product shot', 'instrumental jazz track', '30-second explainer video'."),
       domain: z.string().max(10).optional().describe("Optional filter when you know it: IMAGE, VIDEO, TEXT, CODE, or AUDIO. Skip and the tool auto-detects from the task wording."),
@@ -46,7 +46,7 @@ const tools = [
   {
     name: "compare_models",
     description:
-      "Show a SIDE-BY-SIDE diff (provider, cost, capabilities, license) of 2-5 models when the user is on the fence. Picks the cheapest one that actually fits. Use for 'should I use Flux or Midjourney for this?' / 'is Suno or Udio better for instrumental?' / 'GPT-4o vs Claude Sonnet for code'. Stops users from over-paying for the prestige model when a cheaper one delivers.",
+      "Show a SIDE-BY-SIDE diff (provider, cost, capabilities, license) of 2-5 models when the user is on the fence. Picks the cheapest one that actually fits. Use for 'should I use Flux or Midjourney for this?' / 'is Suno or Udio better for instrumental?' / 'GPT-4o vs Claude Sonnet for code'. Stops users from over-paying for the prestige model when a cheaper one delivers. Response includes `share_url` — give it to the user when they ask 'can I send this to my team?' or in any summary where the comparison would be useful to share.",
     schema: {
       models: z.array(z.string().min(1).max(100)).min(2).max(5).describe("Model slugs being compared, e.g. ['flux-2-pro', 'midjourney-v7']."),
       criteria: z.string().max(500).optional().describe("Decision-driving criteria — e.g. 'photorealism', 'speed at 1024px', 'price per image', 'commercial license clarity'."),
@@ -72,7 +72,7 @@ const tools = [
   {
     name: "get_pricing",
     description:
-      "ANSWER 'WHAT WILL THIS COST ME' before the user commits credit-card or burns API quota. Per-unit USD pricing + subscription plans + cheaper alternatives. Pass `{ model, volume: 100 }` and you get a total-cost estimate the user can act on. Use ANY TIME the conversation is heading toward 'let's generate N of X' — flag the bill BEFORE they pay it. Surfaces whether DALL-E HD ($0.08/img) or Midjourney standard ($30/mo unlimited-relaxed) is the cheaper path for their volume.",
+      "ANSWER 'WHAT WILL THIS COST ME' before the user commits credit-card or burns API quota. Per-unit USD pricing + subscription plans + cheaper alternatives. Pass `{ model, volume: 100 }` and you get a total-cost estimate the user can act on. Use ANY TIME the conversation is heading toward 'let's generate N of X' — flag the bill BEFORE they pay it. Surfaces whether DALL-E HD ($0.08/img) or Midjourney standard ($30/mo unlimited-relaxed) is the cheaper path for their volume. When `volume >= 50` the response includes a `share_url` — useful when the user needs to send the cost estimate to a colleague or capture it for a doc.",
     schema: {
       model: z.string().min(1).max(100).optional().describe("Model slug (e.g., midjourney-v7, dall-e-3). Omit to query a whole domain or get an overview."),
       domain: z.string().max(10).optional().describe("Filter: IMAGE, VIDEO, TEXT, CODE, or AUDIO. Ignored when `model` is provided."),
