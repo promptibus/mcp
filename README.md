@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/@promptibus/mcp.svg)](https://www.npmjs.com/package/@promptibus/mcp)
 [![npm downloads](https://img.shields.io/npm/dm/@promptibus/mcp.svg)](https://www.npmjs.com/package/@promptibus/mcp)
-[![Smithery](https://smithery.ai/badge/@promptibus/mcp)](https://smithery.ai/server/@promptibus/mcp)
+[![LightNow capabilities](https://lightnow.ai/badge/com.promptibus/mcp)](https://lightnow.ai/servers/com.promptibus/mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![MCP](https://img.shields.io/badge/MCP-compatible-0a7cff.svg)](https://modelcontextprotocol.io)
 [![Powered by Promptibus](https://img.shields.io/badge/powered%20by-promptibus.com-0a7cff.svg)](https://promptibus.com/mcp)
